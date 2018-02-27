@@ -33,7 +33,7 @@
   k = 0.25
   t0 = -1.0
   
-# Add some error to each of the parameters
+# Add a little random noise to each of the parameters
   slinf = linf + round(runif(nages*nsamps, -10, 10))
   sk = k + runif(nages*nsamps, -0.05, 0.05)
   st0 = t0 + runif(nages*nsamps, -1, 0.5)
@@ -79,6 +79,9 @@
   writeLines(modelString, con='vbModgq.txt')
 
 # Model calibration -----
+# Parameters monitored
+  params = c('to', 'K', 'beta0')
+  
 # Package the data for JAGS
   vb_data = list(
     Y = fish$slengq,
@@ -86,9 +89,6 @@
     Tmax = max(fish$age),
     N = nrow(fish)
   )
-
-# Parameters monitored
-  params = c('to', 'K', 'beta0')
  
 # Initial values 
   inits <- function(){
@@ -132,7 +132,7 @@
   lines(ages, Lt, type='l', lty=1, lwd=2, col='blue')  
   
 # Model predictions -----
-# Growth curve
+# Growth curve - takes time to render
   # Predict Lt for each fish from model
     ages=seq(1, max(age), .5)
     preds = matrix(data = NA, nrow=length(ek), ncol=length(ages))
