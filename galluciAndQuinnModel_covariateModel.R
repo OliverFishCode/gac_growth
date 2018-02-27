@@ -32,23 +32,27 @@
   age = rep(seq(1, nages, 1), nsamps)
   
 # Known parameters of VBGF for simulated population
-  k = 0.35   # Mean of k
-  t0 = -1.0  # Mean of t0
-  beta0 = 5
-  beta = .12 # Mean effect of temperature
+  k = 0.35      # Mean of k
+  sdk = 0.02    # SD of k
+  t0 = -1.0     # Mean of t0
+  sdt0 = 0.02   # SD of t0
+  beta0 = 5     # Mean of intercept for glm on omega
+  sdbeta0 =.2   # SD of intercept
+  betaT = .12   # Mean effect of temperature
+  sdbetaT = .02 # SD of temperature effect
   temp = runif(length(age), 15, 25) # Simulated temperatures
   
-# Add some error to each of the parameters
-  sk = k + runif(nages*nsamps, -0.05, 0.05)          # L for each fish
-  st0 = t0 + runif(nages*nsamps, -.5, 0.5)            # t0 for each fish
-  sbeta0 = beta0 + runif(nages*nsamps, -.1, .1)
-  sbetaT = beta + runif(nages*nsamps, -.01, .01)
-  sw = exp(sbeta0 + sbetaT*as.vector(scale(temp)))      # omega, as a fxn of temp
+# Add some error to each of the parameters by 
+# drawing each from distributions
+  sk = rnorm(nages*nsamps, k, sdk)             
+  st0 = rnorm(nages*nsamps, t0, sdt0)           
+  sbeta0 = rnorm(nages*nsamps, beta0, sdbeta0) 
+  sbetaT = rnorm(nages*nsamps, betaT, sdbetaT)
+  sw = exp(sbeta0 + sbetaT*as.vector(scale(temp)))   
   
 # Simulated length of individuals based on age and VBGF parameters
   slengq = (sw/sk)*(1-exp(-sk*(age-st0))) # Galluci and Quinn (1979)
-  head(slengq, 10)
-  
+
 # Put the simulated data together in a dataframe
   fish = data.frame(age,    # Fish age
                     temp,   # Temperature
@@ -95,6 +99,9 @@
   writeLines(modelString, con='vbModgq.txt')
 
 # Covariate model calibration -----
+# Parameters monitored
+  params = c('to', 'K', 'beta0', 'betaT', 'tau')
+  
 # Package the data for JAGS
   vb_data = list(
     Y = fish$slengq,
@@ -103,9 +110,6 @@
     temp = as.vector(scale(fish$temp)),
     N = nrow(fish)
   )
-
-# Parameters monitored
-  params = c('to', 'K', 'beta0', 'betaT', 'tau')
  
 # Initial values 
   inits <- function(){
@@ -119,9 +123,9 @@
   }
 
 # MCMC settings
-  ni <- 75000     # Number of draws from posterior (for each chain)
-  nt <- 50        # Thinning rate
-  nb <- 25000     # Number of draws to discard as burn-in
+  ni <- 15000     # Number of draws from posterior (for each chain)
+  nt <- 5         # Thinning rate
+  nb <- 5000      # Number of draws to discard as burn-in
   nc <- 3         # Number of chains
 
 # Call jags and run the model
@@ -134,25 +138,31 @@
   print(vbModgq) 
   
 # Get posterior distributions for parameter estimates
+# Posterior samples from each MCMC run are elements of 
+# sims.list. Can be vectors or matrices depending on 
+# model formulation. Here, the prefix 'e' stands for 'estimate'
   ek = vbModgq$BUGSoutput$sims.list$K
   et0 = vbModgq$BUGSoutput$sims.list$to
   ebeta0 = vbModgq$BUGSoutput$sims.list$beta0
   ebetaT = vbModgq$BUGSoutput$sims.list$betaT
   ew = exp(ebeta0 + ebetaT*mean(as.vector(scale(fish$temp))))
 
-# Check params for correlations
+# Check params for correlations.
   summary(lm(ek~ew))
   plot(ek, ew)
   
 # Quick check of predictions
   # Predict mean length at age using coefficient estimates
-    ages=seq(1, nages, 1)
+    ages = seq(1, nages, 1)
     Lt = (mean(ew)/mean(ek))*(1-exp(-mean(ek)*(ages-mean(et0))))
   # Plot the raw data followed by a blue line for mean prediction
     plot(age, slengq, pch=21, bg='black', cex=1.5)
     lines(ages, Lt, type='l', lty=1, lwd=2, col='blue')  
   
 # Model predictions -----
+    
+# **WARNING** These plots take a while to render
+    
 # Growth curve
   # Predict Lt for each fish from model coefficients
     ages=seq(1, max(age), .5)
@@ -193,7 +203,8 @@
     
 # Checks for accuracy -----
 # Parameter recovery comparisons. How do posteriors match up with
-# known values used for simulation?
+# known values used for simulation? Plot the posterior 
+# distribution for each parameter of interest.
   # k
     hist(ek, col='gray87')
     abline(v=mean(sk), col = 'blue', lwd=2) # True mean
