@@ -32,6 +32,14 @@
   linf = 500
   k = 0.25
   t0 = -1.0
+  sdlinf = 0.02
+  sdk = 0.02
+  sdt0 = 0.02
+  
+  slinf = rnorm(nages*nsamps, linf, sdlinf)    
+  sk = rnorm(nages*nsamps, k, sdk)             
+  st0 = rnorm(nages*nsamps, t0, sdt0) 
+  sw = slinf*sk  
   
 # Add a little random noise to each of the parameters
   slinf = linf + round(runif(nages*nsamps, -10, 10))
@@ -40,11 +48,10 @@
   sw = slinf * sk
   
 # Simulated length of individuals based on age and VBGF parameters
-  slenvb = slinf*(1-exp(-sk*(age-st0)))
   slengq = (sw/sk)*(1-exp(-sk*(age-st0)))
   
 # Put the data together in a dataframe  
-  fish = data.frame(age, slinf, sk, st0, slenvb, slengq)
+  fish = data.frame(age, slinf, sk, st0, slengq)
   
 # Model specification -----
 # Write the model to a file
@@ -101,10 +108,10 @@
   }
 
 # MCMC settings
-  ni <- 55000     # Number of draws from posterior (for each chain)
-  nt <- 10        # Thinning rate
-  nb <- 15000     # Number of draws to discard as burn-in
-  nc <- 3         # Number of chains
+  ni <- 55000      # Number of draws from posterior (for each chain)
+  nt <- 10         # Thinning rate
+  nb <- 15000      # Number of draws to discard as burn-in
+  nc <- 3          # Number of chains
 
 # Call jags and run the model
   vbModgq <- jags(data=vb_data, inits=inits, params, "vbModgq.txt",
@@ -118,7 +125,7 @@
 # Get posterior distributions for parameter estimates
   ek = vbModgq$BUGSoutput$sims.list$K
   et0 = vbModgq$BUGSoutput$sims.list$to
-  ew = vbModgq$BUGSoutput$sims.list$beta0
+  ew = exp(vbModgq$BUGSoutput$sims.list$beta0)
   
 # Check params for correlations
   summary(lm(ek~ew))
@@ -169,4 +176,21 @@
           side=1, line=2.5)
     mtext(expression(paste(italic('w'))),
           side=2, line=2.5)  
-  
+
+# Checks for accuracy -----
+# Parameter recovery comparisons. How do posteriors match up with
+# known values used for simulation? Plot the posterior 
+# distribution for each parameter of interest against the mean
+# used for simulation.
+  # k
+    hist(ek, col='gray87')
+    abline(v=mean(sk), col = 'blue', lwd=2) # True mean
+
+  # t0
+    hist(et0, col='gray87')
+    abline(v=mean(st0), col = 'blue', lwd=2) # True mean
+
+  # Omega
+    hist(ew, col='gray87')                  # Estimate of omega
+    abline(v=mean(sw), col = 'blue', lwd=2) # True mean
+          
