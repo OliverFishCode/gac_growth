@@ -2,6 +2,8 @@
 # Package install
   library(plyr)
   library(R2jags)
+  # Need to install JAGS software before you can use this:
+  # http://sourceforge.net/projects/mcmc-jags/files/
 
 # Make function for inverting logit
   inv.logit=function(x){
