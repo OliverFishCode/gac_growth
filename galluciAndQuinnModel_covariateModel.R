@@ -78,7 +78,8 @@
           log(w[i]) <- beta0 + betaT*temp[i]
         }
 
-      # Priors on VBGF parameters (w defined below by linear model)
+      # Priors on VBGF parameters 
+      # omega defined above by linear model
         # Brody growth coefficient
           K ~ dunif(0, 1)
         # Age at length zero
@@ -123,10 +124,10 @@
   }
 
 # MCMC settings
-  ni <- 15000     # Number of draws from posterior (for each chain)
-  nt <- 5         # Thinning rate
-  nb <- 5000      # Number of draws to discard as burn-in
-  nc <- 3         # Number of chains
+  ni = 15000     # Number of draws from posterior (for each chain)
+  nt = 5         # Thinning rate
+  nb = 5000      # Number of draws to discard as burn-in
+  nc = 3         # Number of chains
 
 # Call jags and run the model
   vbModgq <- jags(data=vb_data, inits=inits, params, "vbModgq.txt",
@@ -204,7 +205,8 @@
 # Checks for accuracy -----
 # Parameter recovery comparisons. How do posteriors match up with
 # known values used for simulation? Plot the posterior 
-# distribution for each parameter of interest.
+# distribution for each parameter of interest against the mean
+# used for simulation.
   # k
     hist(ek, col='gray87')
     abline(v=mean(sk), col = 'blue', lwd=2) # True mean
