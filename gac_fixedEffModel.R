@@ -34,42 +34,60 @@
   
 # Known parameters of VBGF for simulated populations, with linf and
 # k being pop-specific
-  linf = vector(mode='list', length=npops)
-  k = vector(mode='list', length=npops)
-  t0 = vector(mode='list', length=npops)
-
-  for(i in 1:npops){
-    linf[[i]] = rep(seq(550, 350, -200/npops)[i], nsamps*nages)
-    k[[i]] = rep(seq(0.1, 0.5, 0.40/npops)[i], nsamps*nages)
-    t0[[i]] = rep(seq(-3, 1, -2/npops)[i], nsamps*nages)
-
-  }
-  sdlinf = 20
-  sdk = 0.02
-  sdt0 = 0.02  
+  # Pre-allocate vectors to hold known von Bertalanffy params
+    linf = vector(mode='list', length=npops)
+    k = vector(mode='list', length=npops)
+    t0 = vector(mode='list', length=npops)
   
-  pops = sort(rep(seq(1,10, 1), nsamps*nages))
-  ages = rep(seq(1,10, 1), nsamps*nages)
+  # Assign known values of von Bertalanffy params
+  # using a sequence of equally spaced values for each
+    for(i in 1:npops){
+      linf[[i]] = rep(seq(550, 350, -200/npops)[i], nsamps*nages)
+      k[[i]] = rep(seq(0.1, 0.5, 0.40/npops)[i], nsamps*nages)
+      t0[[i]] = rep(seq(-3, 1, 2/npops)[i], nsamps*nages)
+    }
   
-  parms = data.frame(pops, ages,
-                     unlist(linf), 
-                     unlist(k),
-                     t0, sdlinf, sdk, sdt0)
-  names(parms) = c('pops', 'ages', 'linf', 'k', 't0', 'sdlinf', 'sdk', 'sdt0')
+  # Define standard deviations for each parameter that
+  # will be used to draw simulated parameter values
+    sdlinf = 20
+    sdk = 0.02
+    sdt0 = 0.02  
   
-# Simulate nsamps number of von Bert parameters for each age in each
-# population
-
-  slinf =  rnorm(nrow(parms), parms$linf, parms$sdlinf)             
-  sk =  rnorm(nrow(parms), parms$k, parms$sdk)             
-  st0 = rnorm(nrow(parms), parms$t0, parms$sdt0)       
-  sw = slinf * sk 
+  # Make sequences for population number and age for
+  # each of the simulated fish
+    pops = sort(rep(seq(1,10, 1), nsamps*nages))
+    ages = rep(seq(1,10, 1), nsamps*pops)
   
-# Simulated length of individuals based on age and VBGF parameters
-  slengq = (sw/sk)*(1-exp(-sk*(age-st0)))
-  
-# Put the data together in a dataframe  
-  fish = data.frame(parms, slinf, sk, st0, slengq)
+  # Put the known parameters in a dataframe  
+    parms = data.frame(pops, ages,
+                       unlist(linf), 
+                       unlist(k),
+                       unlist(t0),
+                       sdlinf,
+                       sdk,
+                       sdt0)
+  # Give it some manageable names  
+    names(parms) = c('pops',
+                     'ages',
+                     'linf',
+                     'k',
+                     't0',
+                     'sdlinf',
+                     'sdk',
+                     'sdt0')
+    
+  # Simulate nsamps number of von Bert parameters for each age in each
+  # population
+    slinf =  rnorm(nrow(parms), parms$linf, parms$sdlinf)             
+    sk =  rnorm(nrow(parms), parms$k, parms$sdk)             
+    st0 = rnorm(nrow(parms), parms$t0, parms$sdt0)       
+    sw = slinf * sk 
+    
+  # Simulated length of individuals based on age and VBGF parameters
+    slengq = (sw/sk)*(1-exp(-sk*(age-st0)))
+    
+  # Put the data together in a dataframe  
+    fish = data.frame(parms, slinf, sk, st0, slengq)
   
 # Model specification -----
 # Write the model to a file
@@ -79,12 +97,13 @@
         for(i in 1:N){
         # Likelihood
           Y[i] ~ dnorm(L[i], tau[Ti[i]])
+
+        # Length described by Galluci & Quinn (1979)
           L[i] <- (w[i]/K[pop[i]])*(1-exp(-K[pop[i]]*(Ti[i]-to[pop[i]])))
 
         # Linear predictor of w
           log(w[i]) <- beta0[pop[i]]
         }
-
 
         for(j in 1:npops){
         # Priors on VBGF parameters (w defined below by linear model)
