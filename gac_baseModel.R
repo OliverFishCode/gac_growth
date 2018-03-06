@@ -110,11 +110,9 @@
   }
 
 # MCMC settings
-### Will need to bump all of these up to get convergence,
-### start by changing ni to 55000, nt to 30, and nb to 15000
-  ni <- 5500       # Number of draws from posterior (for each chain)
+  ni <- 55000      # Number of draws from posterior (for each chain)
   nt <- 10         # Thinning rate
-  nb <- 1500       # Number of draws to discard as burn-in
+  nb <- 15000      # Number of draws to discard as burn-in
   nc <- 3          # Number of chains
 
 # Call jags and run the model
@@ -149,13 +147,13 @@
     preds = matrix(data = NA, nrow=length(ek), ncol=length(ages))
     for(i in 1:length(ek)){
       for(t in 1:length(ages)){
-        preds[i, t] = (ew[i]/ek[i])*
+        preds[i, t] = (exp(ew[i])/ek[i])*
           (1-exp(-ek[i]*(ages[t]-et0[i])))
       }
     }
   # Make the posterior predictive plot  
     par(mar=c(4,4,1,1))
-    plot(age, slengq, ylim=c(0, max(fish$slengq)),
+    plot(age, slengq, ylim=c(0, round(max(preds[ , ncol(preds)]), -1)),
          yaxt='n',
          xlab='',
          ylab='',
