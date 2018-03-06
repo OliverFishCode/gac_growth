@@ -110,9 +110,10 @@
   }
 
 # MCMC settings
-  ni <- 55000      # Number of draws from posterior (for each chain)
+### DSS: Will need to bump up ni, nt, and nb to get convergence
+  ni <- 5500       # Number of draws from posterior (for each chain)
   nt <- 10         # Thinning rate
-  nb <- 15000      # Number of draws to discard as burn-in
+  nb <- 1500       # Number of draws to discard as burn-in
   nc <- 3          # Number of chains
 
 # Call jags and run the model
@@ -134,11 +135,12 @@
   plot(ek, exp(ew))
   
 # Quick check of predictions
-  ages=seq(1, nages, .5)
-  Lt = (exp(mean(ew))/mean(ek))*(1-exp(-mean(ek)*(ages-mean(et0))))
-  
-  plot(age, slengq, pch=21, bg='black', cex=1.5)
-  lines(ages, Lt, type='l', lty=1, lwd=2, col='blue')  
+  # Make the predictions
+    ages=seq(1, nages, .5)
+    Lt = (mean(ew)/mean(ek))*(1-exp(-mean(ek)*(ages-mean(et0))))
+  # Plot mean predictions against raw data
+    plot(age, slengq, pch=21, bg='black', cex=1.5)
+    lines(ages, Lt, type='l', lty=1, lwd=2, col='blue')  
   
 # Model predictions -----
 # Growth curve - takes time to render
@@ -147,7 +149,7 @@
     preds = matrix(data = NA, nrow=length(ek), ncol=length(ages))
     for(i in 1:length(ek)){
       for(t in 1:length(ages)){
-        preds[i, t] = (exp(ew[i])/ek[i])*
+        preds[i, t] = (ew[i]/ek[i])*
           (1-exp(-ek[i]*(ages[t]-et0[i])))
       }
     }
