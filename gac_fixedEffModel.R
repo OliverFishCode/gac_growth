@@ -56,7 +56,7 @@
   # Make sequences for population number and age for
   # each of the simulated fish
     pops = sort(rep(seq(1,10, 1), nsamps*nages))
-    ages = rep(seq(1,10, 1), nsamps*pops)
+    ages = rep(seq(1,10, 1), nsamps*length(unique(pops)))
   
   # Put the known parameters in a dataframe  
     parms = data.frame(pops, ages,
@@ -162,3 +162,45 @@
 
 # Print a summary of the model
   print(vbModgq) 
+
+# Model results -----
+# Get posterior distributions for parameter estimates
+  ek = vbModgq$BUGSoutput$sims.list$K
+  et0 = vbModgq$BUGSoutput$sims.list$to
+  ew = exp(vbModgq$BUGSoutput$sims.list$beta0)
+    
+# Make some quick boxplots to make sure the
+# posteriors follow simulated parameter values
+  # Graphics window margins
+    par(mar=c(5,5,1,1))
+  # k
+    # Posterior distribution for each pop    
+      boxplot(ek, col='gray87', outline=FALSE,
+              xlab='Population (i)',
+              ylab=expression(italic('k')[italic('i')]),
+              axes=FALSE,
+              ylim=c(0,1), xlim=c(0,11)
+              )  
+    # Axes  
+      axis(1, pos=0)
+      axis(2, las=2, pos=0)
+    # Known means for each pop
+      points(x=unique(pops), 
+             y=unique(unlist(k)),
+             pch=21, cex=1.5, bg='blue', col='blue')
+      
+  # Omega
+    # Posterior distribution for each pop
+      boxplot(ew, col='gray87', outline=FALSE,
+              xlab='Population (i)', ylab=expression(omega[italic('i')]),
+              axes=FALSE,
+              ylim=c(0,300), xlim=c(0,11)
+              )  
+    # Axes
+      axis(1, pos=0)
+      axis(2, las=2, pos=0)
+    # Known means for each pop
+      points(x=unique(pops), 
+         y=unique(unlist(k))*unique(unlist(linf)),
+         pch=21, cex=1.5, bg='red', col='red')
+    
