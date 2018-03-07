@@ -170,7 +170,7 @@
   ew = exp(vbModgq$BUGSoutput$sims.list$beta0)
     
 # Make some quick boxplots to make sure the
-# posteriors follow simulated parameter values
+# posteriors (boxes) follow simulated parameter values (points)
   # Graphics window margins
     par(mar=c(5,5,1,1))
   # k
