@@ -114,8 +114,12 @@
 
         # Priors on parameters of linear model on w
           # Intercept
-            beta0[j] ~ dnorm(0, 0.001)
+            beta0[j] ~ dnorm(b.mu, b.tau)
         }
+
+      # Global priors on mu and tau for beta0[j] above
+        b.mu ~ dnorm(0, 0.001)
+        b.tau ~ dgamma(0.01, 0.001)
 
       # Prior distribution for precision at each age
       # This imposes a multiplicative error structure on length at age
@@ -127,7 +131,7 @@
 
 # Model calibration -----
 # Parameters monitored
-  params = c('to', 'K', 'beta0')
+  params = c('to', 'K', 'beta0', 'b.mu', 'b.tau')
   
 # Package the data for JAGS
   vb_data = list(
@@ -142,10 +146,11 @@
 # Initial values 
   inits <- function(){
     list(
-      beta0 = rnorm(length(unique(fish$pops)), 0, 1),     
+      b.mu = rnorm(1, 0, 1),
+      b.tau = rgamma(1, 0.01, 1),
       K = runif(length(unique(fish$pops)), 0, 1),
       to = runif(length(unique(fish$pops)), -10, 1),
-      tau = rgamma(max(fish$age), .01, 1)
+      tau = rgamma(max(fish$age), 0.01, 1)
     )
   }
 
@@ -162,7 +167,7 @@
 
 # Print a summary of the model
   print(vbModgq) 
-
+  
 # Model results -----
 # Get posterior distributions for parameter estimates
   ek = vbModgq$BUGSoutput$sims.list$K
@@ -170,7 +175,7 @@
   ew = exp(vbModgq$BUGSoutput$sims.list$beta0)
     
 # Make some quick boxplots to make sure the
-# posteriors (boxes) follow simulated parameter values (points)
+# posteriors follow simulated parameter values
   # Graphics window margins
     par(mar=c(5,5,1,1))
   # k
@@ -203,4 +208,4 @@
       points(x=unique(pops), 
          y=unique(unlist(k))*unique(unlist(linf)),
          pch=21, cex=1.5, bg='red', col='red')
-    
+  
