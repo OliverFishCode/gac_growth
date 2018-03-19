@@ -108,7 +108,7 @@
         for(j in 1:npops){
         # Priors on VBGF parameters (w defined below by linear model)
           # Brody growth coefficient
-            K[j] ~ dunif(0, 1)
+            log(K[j]) ~ dunif(0, 1)
           # Age at length zero
             to[j] ~ dunif(-10, 1)
 
