@@ -111,9 +111,9 @@
 
 # MCMC settings
 ### DSS: Will need to bump up ni, nt, and nb to get convergence
-  ni <- 5500       # Number of draws from posterior (for each chain)
+  ni <- 55000       # Number of draws from posterior (for each chain)
   nt <- 10         # Thinning rate
-  nb <- 1500       # Number of draws to discard as burn-in
+  nb <- 15000       # Number of draws to discard as burn-in
   nc <- 3          # Number of chains
 
 # Call jags and run the model
@@ -178,8 +178,7 @@
     axis(2, pos=0, las=2)  
     mtext(expression(paste('Age (years)')),
           side=1, line=2.5)
-    mtext(expression(paste(italic('Length (mm)'))),
-          side=2, line=2.5)  
+    mtext('Length (mm)', side=2, line=2.5)  
 
 # Checks for accuracy -----
 # Parameter recovery comparisons. How do posteriors match up with
