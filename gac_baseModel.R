@@ -38,11 +38,6 @@
   sdk = 0.02
   sdt0 = 0.02
   
-  slinf = rnorm(nages*nsamps, linf, sdlinf)    
-  sk = rnorm(nages*nsamps, k, sdk)             
-  st0 = rnorm(nages*nsamps, t0, sdt0) 
-  sw = slinf*sk  
-  
 # Add a little random noise to each of the parameters
   slinf = linf + round(runif(nages*nsamps, -10, 10))
   sk = k + runif(nages*nsamps, -0.05, 0.05)
