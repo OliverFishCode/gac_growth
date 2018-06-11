@@ -178,7 +178,7 @@
     axis(2, pos=0, las=2)  
     mtext(expression(paste('Age (years)')),
           side=1, line=2.5)
-    mtext(expression(paste(italic('w'))),
+    mtext(expression(paste(italic('Length (mm)'))),
           side=2, line=2.5)  
 
 # Checks for accuracy -----
