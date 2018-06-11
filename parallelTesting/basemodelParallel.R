@@ -56,6 +56,37 @@
 # Put the data together in a dataframe  
   fish <- data.frame(age, slinf, sk, st0, slengq)
   
+# . Model definition -----
+# Define the model as a function
+model <- function(){
+
+  for(i in 1:N){
+    # Likelihood
+      Y[i] ~ dnorm(L[i], tau[Ti[i]])
+      L[i] <- (w[i]/K)*(1-exp(-K*(Ti[i]-to)))
+  
+    # Linear predictor of w
+      log(w[i]) <- beta0
+    }
+  
+  # Priors on VBGF parameters (w defined below by linear model)
+    # Brody growth coefficient
+      K ~ dunif(0, 1)
+    # Age at length zero
+      to ~ dunif(-10, 1)
+  
+  # Priors on parameters of linear model on w
+    # Intercept
+      beta0 ~ dnorm(0, 0.001)
+  
+  # Prior distribution for precision at each age
+  # This imposes a multiplicative error structure on length at age
+    for(t in 1:Tmax){
+      tau[t] ~ dgamma(0.01, 0.001)
+    }
+}
+  
+  
 # . Model calibration -----
 # Parameters monitored
   params = c('to', 'K', 'beta0')
@@ -79,9 +110,9 @@
   }
 
 # MCMC settings
-  ni <- 550       # Number of draws from posterior (for each chain)
+  ni <- 55000       # Number of draws from posterior (for each chain)
   nt <- 10          # Thinning rate
-  nb <- 150       # Number of draws to discard as burn-in
+  nb <- 15000       # Number of draws to discard as burn-in
   nc <- 3           # Number of chains
 
 # Call jags and run the model, re-run if crashes due to
@@ -91,7 +122,7 @@
   while(is.null(vbModgq)){
     attempt <- attempt + 1
     try(
-      vbModgq <- jags(data=vb_data, inits=inits, params, "vbModgq.txt",
+      vbModgq <- jags(data=vb_data, inits=inits, params, model,
         n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
         working.directory = getwd(), progress.bar = "none")
     )
@@ -118,7 +149,7 @@
   
 # Distribute calculations to workers -----
   # Number of simulations to run
-    niterations <- 100
+    niterations <- 1000
   
   # Get start time for benchmarking
     start <- Sys.time()
