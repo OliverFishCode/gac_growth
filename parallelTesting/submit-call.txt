@@ -1,0 +1,1 @@
+submit -v u2-grid-stich-vidia -M -w 10:00:00 -n 48 -N 24 -i gacbasemodeltest.R ./SLURM-snowfall-example

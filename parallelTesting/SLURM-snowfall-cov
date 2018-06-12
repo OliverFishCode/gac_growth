@@ -1,8 +1,8 @@
 #!/bin/sh
-#SBATCH --partition=debug
+#SBATCH --partition=vidia
 #SBATCH --nodes=2
 #SBATCH --cpus-per-task=1
-#SBATCH --tasks-per-node=12
+#SBATCH --tasks-per-node=24
 
 tic=`date +%s`
 echo "Start Time = "`date`

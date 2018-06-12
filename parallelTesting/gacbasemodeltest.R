@@ -7,7 +7,7 @@
 # Get number of cores
 args = commandArgs(trailingOnly = TRUE);
 ncpus = args[1];
-ncpus = 3 # Uncomment to run on local workstation
+#ncpus = 3 # Uncomment to run on local workstation
 
 # Initialize snowfall
   sfInit(parallel = TRUE, cpus=ncpus, type="SOCK")
