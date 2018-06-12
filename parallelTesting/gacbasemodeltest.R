@@ -10,8 +10,13 @@ ncpus = args[1];
 #ncpus = 3 # Uncomment to run on local workstation
 
 # Initialize snowfall
+<<<<<<< HEAD:parallelTesting/basemodelParallel.R
+  sfInit(parallel = TRUE, cpus=nCpus, type="SOCK")
+  
+=======
   sfInit(parallel = TRUE, cpus=ncpus, type="SOCK")
 
+>>>>>>> 69a0bdc76e9e64c7bf38cf4b33c8ce7d3b42ff18:parallelTesting/gacbasemodeltest.R
 # Wrapper fxn -----
 # Define the wrapper function to call in parallel,
 # which is really just the whole simulation
