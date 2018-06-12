@@ -14,7 +14,7 @@
   nCpus <- parallel::detectCores() - 1
 
 # Initialize snowfall
-  sfInit(parallel = TRUE, cpus=7, type="SOCK")
+  sfInit(parallel = TRUE, cpus=nCpus, type="SOCK")
   
 # Wrapper fxn -----
 # Define the wrapper function to call in parallel,
