@@ -131,7 +131,7 @@ axis(side=2, pos=80, las=TRUE)
   points(1:10,
          fixedres[1 , grep(pattern="sk", x=names(fixedres))]*
            fixedres[1 , grep(pattern="slinf", x=names(fixedres))],
-         pch=21, col='white', bg='black'
+         pch=21, col='white', bg='gray40'
     )  
   
 # Estimation accuracy for t0
