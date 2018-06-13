@@ -7,7 +7,7 @@
 # Get number of cores
 args = commandArgs(trailingOnly = TRUE);
 ncpus = args[1];
-ncpus = 3  # Uncomment to run on local workstation
+ncpus = 7  # Uncomment to run on local workstation
   
 # Initialize snowfall
   sfInit(parallel = TRUE, cpus=ncpus, type="SOCK")
@@ -122,9 +122,9 @@ modelString = "
   }
 
 # MCMC settings
-  ni <- 550       # Number of draws from posterior (for each chain)
+  ni <- 55000       # Number of draws from posterior (for each chain)
   nt <- 10          # Thinning rate
-  nb <- 150       # Number of draws to discard as burn-in
+  nb <- 15000       # Number of draws to discard as burn-in
   nc <- 3           # Number of chains
 
 # Call jags and run the model, re-run if crashes due to
@@ -166,7 +166,7 @@ modelString = "
   
 # Distribute calculations to workers -----
   # Number of simulations to run
-    niterations <- 50
+    niterations <- 1000
   
   # Get start time for benchmarking
     start <- Sys.time()
