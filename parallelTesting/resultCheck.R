@@ -58,4 +58,114 @@ axis(side=2, pos=80, las=TRUE)
   axis(side=1, pos=0)    
   axis(side=2, pos=0, las=TRUE)
 
+# Fixed-effects model -----
+  load('fixedresult.rda')
+  head(fixedres)
+  nrow(fixedres)  
+  
+# Estimation accuracy for k
+# Compare estimated k to true values using 
+# a boxplot that shows 95% CIs
+  # Set margins
+  par(mar=c(5,5,1,1))
+  # Set up the boxplot, will write over this with new whiskers
+  bb <- boxplot(fixedres[ , grep(pattern="K.", x=names(fixedres))],
+                outline=FALSE, col='gray87', ylim=c(0,1),
+                col.axis='white', notch=FALSE, plot=FALSE)
+  # Replace stats for whiskers with 95% CI
+  bb$stats[c(1,5), ] <- apply(
+    fixedres[ , grep(pattern="K.", x=names(fixedres))],
+    2,
+    quantile,
+    probs=c(.025, 0.975), na.rm = TRUE
+    )
+  # Re-plot
+  bxp(bb, outline=FALSE, ylim=c(0,1),
+      boxfill='gray87', col.axis='white',
+      staplewex=0, whisklty=1, whiskcol='gray40',
+      whisklwd=2, boxcol='gray40', boxlwd=2,
+      medcol='gray40')
+  # Add x (side=1) and y (side=2) axes
+  axis(side=1, at=seq(1,10,1), labels = seq(1,10,1))
+  axis(side=2, las=2)
+  # Close it up with a box so axis styles match
+  box()
+  # Add axis labels
+  mtext(text='Population number', side=1, line=3.5)
+  mtext(text=expression(italic('k'[g])), side=2, line=3.5)
+  points(1:10,
+         fixedres[1 , grep(pattern="sk", x=names(fixedres))],
+         pch=21, col='white', bg='gray40'
+    )
 
+# Estimation accuracy for omega
+# Compare estimated omega to true values using 
+# a boxplot that shows 95% CIs
+  # Set margins
+  par(mar=c(5,5,1,1))
+  # Set up the boxplot, will write over this with new whiskers
+  bb <- boxplot(exp(fixedres[ , grep(pattern="beta0.", x=names(fixedres))]),
+                outline=FALSE, col='gray87', ylim=c(0,300),
+                col.axis='white', notch=FALSE, plot=FALSE)
+  # Replace stats for whiskers with 95% CI
+  bb$stats[c(1,5), ] <- apply(
+    exp(fixedres[ , grep(pattern="beta0.", x=names(fixedres))]),
+    2,
+    quantile,
+    probs=c(.025, 0.975), na.rm = TRUE
+    )
+  # Re-plot
+  bxp(bb, outline=FALSE, ylim=c(0,300),
+      boxfill='gray87', col.axis='white',
+      staplewex=0, whisklty=1, whiskcol='gray40',
+      whisklwd=2, boxcol='gray40', boxlwd=2,
+      medcol='gray40')
+  # Add x (side=1) and y (side=2) axes
+  axis(side=1, at=seq(1,10,1), labels = seq(1,10,1))
+  axis(side=2, las=2)
+  # Close it up with a box so axis styles match
+  box()
+  # Add axis labels
+  mtext(text='Population number', side=1, line=3.5)
+  mtext(text=expression(italic(omega[g])), side=2, line=3.5)
+  points(1:10,
+         fixedres[1 , grep(pattern="sk", x=names(fixedres))]*
+           fixedres[1 , grep(pattern="slinf", x=names(fixedres))],
+         pch=21, col='white', bg='black'
+    )  
+  
+# Estimation accuracy for t0
+# Compare estimated t0 to true values using 
+# a boxplot that shows 95% CIs
+  # Set margins
+  par(mar=c(5,5,1,1))
+  # Set up the boxplot, will write over this with new whiskers
+  bb <- boxplot(fixedres[ , grep(pattern="to.", x=names(fixedres))],
+                outline=FALSE, col='gray87', ylim=c(-10,0),
+                col.axis='white', notch=FALSE, plot=FALSE)
+  # Replace stats for whiskers with 95% CI
+  bb$stats[c(1,5), ] <- apply(
+    fixedres[ , grep(pattern="to.", x=names(fixedres))],
+    2,
+    quantile,
+    probs=c(.025, 0.975), na.rm = TRUE
+    )
+  # Re-plot
+  bxp(bb, outline=FALSE, ylim=c(-10,0),
+      boxfill='gray87', col.axis='white',
+      staplewex=0, whisklty=1, whiskcol='gray40',
+      whisklwd=2, boxcol='gray40', boxlwd=2,
+      medcol='gray40')
+  # Add x (side=1) and y (side=2) axes
+  axis(side=1, at=seq(1,10,1), labels = seq(1,10,1))
+  axis(side=2, las=2)
+  # Close it up with a box so axis styles match
+  box()
+  # Add axis labels
+  mtext(text='Population number', side=1, line=3.5)
+  mtext(text=expression(italic('t')['0,'][italic(' g')]), side=2, line=3.5)
+  points(1:10,
+         fixedres[1 , grep(pattern="st0", x=names(fixedres))],
+         pch=21, col='white', bg='gray40'
+    )
+  
