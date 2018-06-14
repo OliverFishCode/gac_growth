@@ -1,0 +1,45 @@
+#!/bin/sh
+#SBATCH --partition=vidia
+#SBATCH --nodes=2
+#SBATCH --cpus-per-task=1
+#SBATCH --tasks-per-node=24
+
+tic=`date +%s`
+echo "Start Time = "`date`
+
+echo "SLURM_JOBID="$SLURM_JOBID
+echo "SLURM_JOB_NODELIST"=$SLURM_JOB_NODELIST
+echo "SLURM_NNODES"=$SLURM_NNODES
+echo "SLURMTMPDIR="$SLURMTMPDIR
+
+cd $SLURM_SUBMIT_DIR
+echo "working directory = "$SLURM_SUBMIT_DIR
+
+# load needed modules on cluster
+module load R
+module load jags
+module list
+ulimit -s unlimited
+
+# Get parameters to pass to R 'snowfall' package:
+
+# count the number of processors
+np=`srun hostname -s | wc -l`
+
+# generate nodelist
+nodelist=`srun hostname -s | sort | tr '\n' ' '`
+
+echo "processor count = $np"
+echo "Launching snowfall script using R"
+
+# Start R script, sending the parameters
+R CMD BATCH --no-save --no-restore "--args $np $nodelist" ranEffModelTest.R
+
+echo "All Done!"
+
+echo "End Time = "`date`
+toc=`date +%s`
+
+elapsedTime=`expr $toc - $tic`
+echo "Elapsed Time = $elapsedTime seconds"
+
