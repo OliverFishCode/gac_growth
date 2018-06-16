@@ -43,7 +43,7 @@ ncpus = args[1];
     for(i in 1:npops){
       linf[[i]] = rep(seq(550, 350, -200/npops)[i], nsamps*nages)
       k[[i]] = rep(seq(0.1, 0.5, 0.40/npops)[i], nsamps*nages)
-      t0[[i]] = rep(seq(-3, 1, 2/npops)[i], nsamps*nages)
+      t0[[i]] = rep(-1, nsamps*nages)
     }
   
   # Define standard deviations for each parameter that
