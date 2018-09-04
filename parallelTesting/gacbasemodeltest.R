@@ -10,13 +10,8 @@ ncpus = args[1];
 #ncpus = 3 # Uncomment to run on local workstation
 
 # Initialize snowfall
-<<<<<<< HEAD:parallelTesting/basemodelParallel.R
-  sfInit(parallel = TRUE, cpus=nCpus, type="SOCK")
-  
-=======
   sfInit(parallel = TRUE, cpus=ncpus, type="SOCK")
 
->>>>>>> 69a0bdc76e9e64c7bf38cf4b33c8ce7d3b42ff18:parallelTesting/gacbasemodeltest.R
 # Wrapper fxn -----
 # Define the wrapper function to call in parallel,
 # which is really just the whole simulation
@@ -37,8 +32,8 @@ ncpus = args[1];
   
 # Known parameters of VBGF for simulated population
   linf <- 500
-  k <- 0.25
-  t0 <- -1.0
+  k <- 0.5
+  t0 <- -0.20
   sdlinf <- 0.02
   sdk <- 0.02
   sdt0 <- 0.02
@@ -110,9 +105,9 @@ ncpus = args[1];
   }
 
 # MCMC settings
-  ni <- 550       # Number of draws from posterior (for each chain)
+  ni <- 55000       # Number of draws from posterior (for each chain)
   nt <- 10          # Thinning rate
-  nb <- 150       # Number of draws to discard as burn-in
+  nb <- 15000       # Number of draws to discard as burn-in
   nc <- 3           # Number of chains
 
 # Call jags and run the model, re-run if crashes due to
@@ -152,7 +147,7 @@ ncpus = args[1];
   
 # Distribute calculations to workers -----
   # Number of simulations to run
-    niterations <- 48
+    niterations <- 1000
   
   # Get start time for benchmarking
     start <- Sys.time()
