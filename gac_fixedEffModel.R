@@ -150,9 +150,9 @@
   }
 
 # MCMC settings
-  ni <- 5500      # Number of draws from posterior (for each chain)
+  ni <- 550      # Number of draws from posterior (for each chain)
   nt <- 10        # Thinning rate
-  nb <- 1500      # Number of draws to discard as burn-in
+  nb <- 150      # Number of draws to discard as burn-in
   nc <- 3         # Number of chains
 
 # Call jags and run the model

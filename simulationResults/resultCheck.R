@@ -1,25 +1,32 @@
 # Base model -----
-load('result.rda')
+load('simulationResults/result.rda')
 head(res)
 nrow(res)
+
 # Estimation accuracy for k
-par(mar=c(5,5,1,1))
+par(mfrow=c(1, 2), oma=c(1,1,1,1), mar=c(4,4,1,1))
 hist(res$K, col='gray87', xlab=expression(italic('k')),
      ylab = 'Frequency', yaxt='n', xaxt='n',
-     xlim = c(0, .5), main='')
-abline(v=mean(res$k), col='blue', lty=1, lwd=3)
+     xlim = c(0.1, .4), main='',
+     border='gray87', ylim=c(0,350)
+     )
+abline(v=mean(res$k), col='black', lty=1, lwd=3)
+#abline(v=mean(res$K), col='gray', lty=2, lwd=3)
 axis(side=1, pos=0)    
-axis(side=2, pos=0, las=TRUE)
+axis(side=2, pos=.1, las=TRUE)
 
 # Estimation accuracy for w
-par(mar=c(5,5,1,1))
+par(mar=c(4,2,1,1))
 hist(exp(res$beta0), col='gray87', 
      xlab=expression(omega),
      ylab = 'Frequency', yaxt='n', xaxt='n',
-     xlim = c(80, 160), main='')
-abline(v=mean(res$k)*mean(res$linf), col='blue', lty=1, lwd=3)
+     xlim = c(80, 160), main='',
+     border='gray87', ylim=c(0,350))
+abline(v=mean(res$k)*mean(res$linf), col='black', lty=1, lwd=3)
+#abline(v=mean(exp(res$beta0)), col='gray', lty=2, lwd=3)
 axis(side=1, pos=0)    
-axis(side=2, pos=80, las=TRUE)
+#axis(side=2, pos=80, las=TRUE)
+
 
 # Covariate model -----
   load('covresult.rda')

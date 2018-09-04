@@ -32,8 +32,8 @@
   
 # Known parameters of VBGF for simulated population
   linf = 500
-  k = 0.25
-  t0 = -1.0
+  k = 0.5
+  t0 = -.20
   sdlinf = 0.02
   sdk = 0.02
   sdt0 = 0.02
