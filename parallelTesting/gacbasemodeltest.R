@@ -46,7 +46,7 @@ ncpus = args[1];
 # Add a little random noise to each of the parameters
   slinf <- linf + round(runif(nages*nsamps, -10, 10))
   sk <- k + runif(nages*nsamps, -0.05, 0.05)
-  st0 <- t0 + runif(nages*nsamps, -1, 0.5)
+  st0 <- t0 + runif(nages*nsamps, -0.01, 0.01)
   sw <- slinf * sk
   
 # Simulated length of individuals based on age and VBGF parameters
@@ -70,7 +70,7 @@ ncpus = args[1];
       # Brody growth coefficient
         K ~ dunif(0, 1)
       # Age at length zero
-        to ~ dunif(-10, 1)
+        to ~ dunif(-10, 10)
     # Priors on parameters of linear model on w
       # Intercept
         beta0 ~ dnorm(0, 0.001)
@@ -98,7 +98,7 @@ ncpus = args[1];
   inits <- function(){
     list(
       K = runif(1, 0, 1),
-      to = runif(1, -10, 1),
+      to = runif(1, -10, 10),
       tau = rgamma(max(fish$age), .01, 1),
       beta0 = rnorm(1, 0, 1)     
     )
