@@ -109,7 +109,7 @@ ncpus = args[1];
           # Brody growth coefficient
             K[j] ~ dunif(0, 1)
           # Age at length zero
-            to[j] ~ dunif(-10, 1)
+            to[j] ~ dunif(-10, 10)
 
         # Priors on parameters of linear model on w
           # Intercept

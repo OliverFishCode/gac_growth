@@ -3,41 +3,65 @@ load('simulationResults/result.rda')
 head(res)
 nrow(res)
 
-# Estimation accuracy for k
-par(mfrow=c(1, 3), oma=c(1,1,1,1), mar=c(4,4,1,1))
-hist(res$K, col='gray60', xlab=expression(italic('k')),
-     ylab = 'Frequency', yaxt='n', xaxt='n',
-     xlim = c(0.4, .6), main='',
-     border='gray60', ylim=c(0,350)
-     )
-abline(v=mean(res$k), col='black', lty=1, lwd=2)
-#abline(v=mean(res$K), col='gray', lty=2, lwd=3)
-axis(side=1, pos=0)    
-axis(side=2, pos=.4, las=TRUE)
+# . Fig. 1 -----
+  # Set up graphics device
+  tiff(
+    filename = "Figure1.tif",
+    width = 1460,
+    height = 970,
+    pointsize = 8,
+    res = 350
+  )
 
-# Estimation accuracy for w
-par(mar=c(4,2,1,1))
-hist(exp(res$beta0), col='gray60', 
-     xlab=expression(omega),
-     ylab = 'Frequency', yaxt='n', xaxt='n',
-     xlim = c(200, 300), main='',
-     border='gray60', ylim=c(0,350))
-abline(v=mean(res$k)*mean(res$linf), col='black',
-       lty=1, lwd=2)
-axis(side=1, pos=0)    
-#axis(side=2, pos=80, las=TRUE)
+  # Estimation accuracy for k
+    par(mfrow=c(1, 3), oma=c(1,1,1,1), mar=c(4,4,1,1))
+    hist(res$K, col='gray87', xlab=expression(italic('k')),
+         ylab = 'Frequency', yaxt='n', xaxt='n',
+         xlim = c(0.4, .6), main='',
+         border='gray87', ylim=c(0,350),
+         breaks = 15, cex.lab=1.25
+         )
+    abline(v=mean(res$k), col='black', lty=1, lwd=2)
+    axis(side=1, pos=0)    
+    axis(side=2, pos=.4, las=TRUE)
+  
+  # Estimation accuracy for omega
+    par(mar=c(4,2,1,1))
+    hist(exp(res$beta0), col='gray87', 
+         xlab=expression(omega),
+         ylab = 'Frequency', yaxt='n', xaxt='n',
+         xlim = c(200, 300), main='',
+         border='gray87', ylim=c(0,350),
+         breaks = 15, cex.lab=1.25
+         )
+    abline(v=mean(res$k)*mean(res$linf), col='black',
+           lty=1, lwd=2)
+    axis(side=1, pos=0)    
 
-# Estimation accuracy for t0
-par(mar=c(4,2,1,1))
-hist(res$to, col='gray60', 
-     xlab=expression(paste('t'['0'])),
-     ylab = 'Frequency', yaxt='n', xaxt='n',
-     xlim = c(-1, 1), main='',
-     border='gray60', ylim=c(0,350))
-abline(v=mean(res$t0), col='black', lty=1, lwd=2)
-axis(side=1, pos=0)    
-#axis(side=2, pos=80, las=TRUE)
+  # Estimation accuracy for t0
+    par(mar=c(4,2,1,1))
+    hist(res$to, col='gray87', 
+         xlab=expression(paste(italic('t')['0'])),
+         ylab = 'Frequency', yaxt='n', xaxt='n',
+         xlim = c(-.6, .2), main='',
+         border='gray87', ylim=c(0,350),
+         breaks = 20, cex.lab=1.25
+         )
+    abline(v=mean(res$t0), col='black', lty=1, lwd=2)
+    axis(side=1, pos=0)    
+    dev.off()
 
+  # Accuracy and precision
+    # k
+    mean(res$K)
+    quantile(res$K, probs = c(0.025, 0.975))     
+    # omega
+    mean(exp(res$beta0))
+    quantile(exp(res$beta0), probs = c(0.025, 0.975)) 
+    # t0
+    mean(res$to)
+    quantile(res$to, probs = c(0.025, 0.975))      
+    
 # Covariate model -----
   load('covresult.rda')
   head(covres)
@@ -158,7 +182,7 @@ axis(side=1, pos=0)
   par(mar=c(5,5,1,1))
   # Set up the boxplot, will write over this with new whiskers
   bb <- boxplot(fixedres[ , grep(pattern="to.", x=names(fixedres))],
-                outline=FALSE, col='gray87', ylim=c(-10,0),
+                outline=FALSE, col='gray87', ylim=c(-2,0),
                 col.axis='white', notch=FALSE, plot=FALSE)
   # Replace stats for whiskers with 95% CI
   bb$stats[c(1,5), ] <- apply(
@@ -168,7 +192,7 @@ axis(side=1, pos=0)
     probs=c(.025, 0.975), na.rm = TRUE
     )
   # Re-plot
-  bxp(bb, outline=FALSE, ylim=c(-10,0),
+  bxp(bb, outline=FALSE, ylim=c(-2,0),
       boxfill='gray87', col.axis='white',
       staplewex=0, whisklty=1, whiskcol='gray40',
       whisklwd=2, boxcol='gray40', boxlwd=2,
