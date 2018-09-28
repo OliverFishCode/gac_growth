@@ -7,7 +7,7 @@
 # Get number of cores
 args = commandArgs(trailingOnly = TRUE);
 ncpus = args[1];
-#ncpus = 7
+ncpus = 3
 
 # Initialize snowfall
   sfInit(parallel = TRUE, cpus=ncpus, type="SOCK")
@@ -19,78 +19,66 @@ ncpus = args[1];
     
 # . Data definition -----
 # Number of age classes
-  nages = 10
+  nages <- 10
   
 # Number of samples in each age class
-  nsamps = 10
+  nsamps <- 10
 
 # Create population of known ages with 30 individuals in each age class
-  age = rep(seq(1, nages, 1), nsamps)
+  age <- rep(seq(1, nages, 1), nsamps)
   
 # Create a known number of populations over which to replicate the 
 # age structures
-  npops = 10
+  npops <- 10
   
 # Known parameters of VBGF for simulated populations, with linf and
 # k being pop-specific
   # Pre-allocate vectors to hold known von Bertalanffy params
-    linf = vector(mode='list', length=npops)
-    k = vector(mode='list', length=npops)
-    t0 = vector(mode='list', length=npops)
+    sw <- vector(mode='list', length=npops)
+    sk <- vector(mode='list', length=npops)
+    st0 <- vector(mode='list', length=npops)
   
   # Assign known values of von Bertalanffy params
   # using a sequence of equally spaced values for each
     for(i in 1:npops){
-      linf[[i]] = rep(seq(550, 350, -200/npops)[i], nsamps*nages)
-      k[[i]] = rep(seq(0.1, 0.5, 0.40/npops)[i], nsamps*nages)
-      t0[[i]] = rep(-1, nsamps*nages)
+      sw[[i]] <- rep(seq(50, 250, 200/npops)[i], nsamps*nages)
+      sk[[i]] <- rep(seq(0.1, 0.5, 0.40/npops)[i], nsamps*nages)
+      st0[[i]] <- rep(-1, nsamps*nages)
     }
-  
-  # Define standard deviations for each parameter that
-  # will be used to draw simulated parameter values
-    sdlinf = 20
-    sdk = 0.02
-    sdt0 = 0.02  
-  
+    sw <- unlist(sw)
+    sk <- unlist(sk)
+    st0 <- unlist(st0)
+    
+
   # Make sequences for population number and age for
   # each of the simulated fish
-    pops = sort(rep(seq(1,10, 1), nsamps*nages))
-    ages = rep(seq(1,10, 1), nsamps*length(unique(pops)))
+    pops <- sort(rep(seq(1,10, 1), nsamps*nages))
+    ages <- rep(seq(1,10, 1), nsamps*length(unique(pops)))
   
-  # Put the known parameters in a dataframe  
-    parms = data.frame(pops, ages,
-                       unlist(linf), 
-                       unlist(k),
-                       unlist(t0),
-                       sdlinf,
-                       sdk,
-                       sdt0)
-  # Give it some manageable names  
-    names(parms) = c('pops',
+  # Put the known parameters in a dataframe
+    parms <- data.frame(pops, ages,
+                       unlist(sw),
+                       unlist(sk),
+                       unlist(st0))
+  # # Give it some manageable names  
+    names(parms) <- c('pops',
                      'ages',
-                     'linf',
-                     'k',
-                     't0',
-                     'sdlinf',
-                     'sdk',
-                     'sdt0')
+                     'sw',
+                     'sk',
+                     'st0')
     
-  # Simulate nsamps number of von Bert parameters for each age in each
-  # population
-    slinf =  rnorm(nrow(parms), parms$linf, parms$sdlinf)             
-    sk =  rnorm(nrow(parms), parms$k, parms$sdk)             
-    st0 = rnorm(nrow(parms), parms$t0, parms$sdt0)       
-    sw = slinf * sk 
-    
-  # Simulated length of individuals based on age and VBGF parameters
-    slengq = (sw/sk)*(1-exp(-sk*(age-st0)))
-    
+  # Simulate length based on age and vonB params
+  slengq <- 
+  rnorm(n=nages*nsamps*npops,
+        mean=(sw/sk)*(1-exp(-sk*(ages-st0))),
+        sd=10)
+  
   # Put the data together in a dataframe  
-    fish = data.frame(parms, slinf, sk, st0, slengq)
+    fish <- data.frame(parms, slengq)
   
 # . Model definition ----- 
 # Write the model to a file
-  modelString = "
+  modelString <- "
     model{
 
         for(i in 1:N){
@@ -113,7 +101,7 @@ ncpus = args[1];
 
         # Priors on parameters of linear model on w
           # Intercept
-            beta0[j] ~ dnorm(0, 0.001)
+            beta0[j] ~ dnorm(0, 0.0001)
         }
 
       # Prior distribution for precision at each age
@@ -125,10 +113,10 @@ ncpus = args[1];
   
 # . Model calibration -----
 # Parameters monitored
-  params = c('to', 'K', 'beta0')
+  params <- c('to', 'K', 'beta0')
   
 # Package the data for JAGS
-  vb_data = list(
+  vb_data <- list(
     Y = fish$slengq,
     Ti = fish$ages,
     Tmax = max(fish$ages),
@@ -142,15 +130,15 @@ ncpus = args[1];
     list(
       beta0 = rnorm(length(unique(fish$pops)), 0, 1),     
       K = runif(length(unique(fish$pops)), 0, 1),
-      to = runif(length(unique(fish$pops)), -10, 1),
+      to = runif(length(unique(fish$pops)), -10, 10),
       tau = rgamma(max(fish$age), .01, 1)
     )
   }
 
 # MCMC settings
-  ni <- 55000       # Number of draws from posterior (for each chain)
+  ni <- 5500       # Number of draws from posterior (for each chain)
   nt <- 10          # Thinning rate
-  nb <- 15000       # Number of draws to discard as burn-in
+  nb <- 2500       # Number of draws to discard as burn-in
   nc <- 3           # Number of chains
 
 # Call jags and run the model, re-run if crashes due to
@@ -172,12 +160,12 @@ ncpus = args[1];
 # Save the estimates and the known parameter values
   ests <- summary(fin)[[1]][,1]
   out <- c(ests,
-           unlist(lapply(linf, unique)),
-           unlist(lapply(k, unique)),
-           unlist(lapply(t0, unique))
+           unique(sw),#unlist(lapply(sw, unique)),
+           unique(sk),#unlist(lapply(sk, unique)),
+           rep(unique(st0), 10)#unlist(lapply(st0, unique))
            )
   names(out)[(length(out)-29):length(out)] <- c(
-    paste('slinf', seq(1,10,1), sep=''),
+    paste('sw', seq(1,10,1), sep=''),
     paste('sk', seq(1,10,1), sep=''),
     paste('st0', seq(1,10,1), sep=''))  
   
@@ -193,11 +181,11 @@ ncpus = args[1];
   sfLibrary(rlecuyer)
   
 # Start network random number generator -----
-  sfClusterSetupRNG()
+#  sfClusterSetupRNG()
   
 # Distribute calculations to workers -----
   # Number of simulations to run
-    niterations <- 1000
+    niterations <- 10
   
   # Get start time for benchmarking
     start <- Sys.time()

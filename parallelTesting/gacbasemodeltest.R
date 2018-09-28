@@ -18,42 +18,37 @@ ncpus = args[1];
   wrapper <- function(x){
     
 # . Environment variables
-  # Sys.setenv(PATH=$PATH:/usr/lib/rjags.so)
+  #Sys.setenv(PATH=$PATH:/util/academic/jags/4.2.0/bin/jags)
     
 # . Data definition -----
 # Number of age classes
-  nages <- 10
+  nages = 10
   
 # Number of samples in each age class
-  nsamps <- 30
+  nsamps = 10
 
-# Create population of known ages with 30 individuals in each age class
-  age <- rep(seq(1, nages, 1), nsamps)
+# Create population of known ages with nsamps
+# individuals in each age class
+  age = rep(seq(1, nages, 1), nsamps)
   
-# Known parameters of VBGF for simulated population
-  linf <- 500
-  k <- 0.5
-  t0 <- -0.20
-  sdlinf <- 0.02
-  sdk <- 0.02
-  sdt0 <- 0.02
+# Define parameters
+  k = 0.3
+  w = 100
+  t0 = -1  
   
-  slinf <- rnorm(nages*nsamps, linf, sdlinf)    
-  sk <- rnorm(nages*nsamps, k, sdk)             
-  st0 <- rnorm(nages*nsamps, t0, sdt0) 
-  sw <- slinf*sk  
+# Randomly sample parameters for each fish
+# K is on the log scale for simulation to 
+# constrain real value of samples to 
+# be positive.
+  sampl <- 
+  rnorm(n=nages*nsamps,
+        mean=(w/k)*(1-exp(-k*(age-t0))),
+        sd=10)
   
-# Add a little random noise to each of the parameters
-  slinf <- linf + round(runif(nages*nsamps, -10, 10))
-  sk <- k + runif(nages*nsamps, -0.05, 0.05)
-  st0 <- t0 + runif(nages*nsamps, -0.01, 0.01)
-  sw <- slinf * sk
-  
-# Simulated length of individuals based on age and VBGF parameters
-  slengq <- (sw/sk)*(1-exp(-sk*(age-st0)))
-  
-# Put the data together in a dataframe  
-  fish <- data.frame(age, slinf, sk, st0, slengq)
+# Combine the von Bert parameters from each
+# sample with the age vector
+  fish <- data.frame(age, k, w, t0, sampl)
+  names(fish)[2:5] <- c("sk", "sw", "st0", "length")
   
 # . Model definition ----- 
 # Define the model as a function
@@ -75,7 +70,6 @@ ncpus = args[1];
       # Intercept
         beta0 ~ dnorm(0, 0.001)
     # Prior distribution for precision at each age
-    # This imposes a multiplicative error structure on length at age
       for(t in 1:Tmax){
         tau[t] ~ dgamma(0.01, 0.001)
       }
@@ -88,7 +82,7 @@ ncpus = args[1];
   
 # Package the data for JAGS
   vb_data <- list(
-    Y = fish$slengq,
+    Y = fish$length,
     Ti = fish$age,
     Tmax = max(fish$age),
     N = nrow(fish)
@@ -105,32 +99,34 @@ ncpus = args[1];
   }
 
 # MCMC settings
-  ni <- 55000       # Number of draws from posterior (for each chain)
-  nt <- 10          # Thinning rate
-  nb <- 15000       # Number of draws to discard as burn-in
-  nc <- 3           # Number of chains
+  ni <- 55000        # Number of samples
+  nt <- 10           # Thinning rate
+  nb <- 15000        # Burn-in
+  nc <- 3            # Number of chains
 
-# Call jags and run the model, re-run if crashes due to
-# bad initial values
+# Call jags and run the model, re-run if crashes
+# due to bad initial values
   fin <- NULL
   attempt <- 0
   while(is.null(fin)){
     attempt <- attempt + 1
     try({
-      vbMod <- jags.model(file=textConnection(modelString) , data=vb_data,
-                            inits=inits, n.adapt = 100, quiet=TRUE)
+      vbMod <- jags.model(file=textConnection(modelString),
+                          data=vb_data,
+                          inits=inits,
+                          n.adapt = 100,
+                          quiet=TRUE)
       update(vbMod, nb, progress.bar = "none")
-      fin <- coda.samples(vbMod, params, ni, progress.bar = "none")
+      fin <- coda.samples(vbMod, params, ni, thin=nt,
+                          progress.bar = "none")
       }
-
     )
   }
 
 # Save the estimates and the known parameter values
   ests <- summary(fin)[[1]][,1]
-  out <- c(ests, linf, k, t0)
-  names(out)[4:6] <- c('linf', 'k', 't0')  
-  
+  out <- unlist(c(ests, fish[1,2:4]))
+
 # Return the result  
   return(list(
     out = out
@@ -143,7 +139,7 @@ ncpus = args[1];
   sfLibrary(rlecuyer)
   
 # Start network random number generator -----
-  sfClusterSetupRNG()
+  #sfClusterSetupRNG()
   
 # Distribute calculations to workers -----
   # Number of simulations to run
