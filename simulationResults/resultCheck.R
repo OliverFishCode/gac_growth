@@ -119,7 +119,7 @@ nrow(res)
   )
 
  # Set up plotting window
-    par(mfrow=c(3, 2), oma=c(4,5,1,1), mar=c(1,1,1,1))
+    par(mfrow=c(3, 2), oma=c(4,5,2,1), mar=c(1,1,1,1))
  # Estimation accuracy for k from fixed eff model
  # Set up the boxplot, will write over this with new whiskers
   bb <- boxplot(fixedres[ , grep(pattern="K.", x=names(fixedres))],
@@ -144,12 +144,15 @@ nrow(res)
   # Close it up with a box so axis styles match
   box()
   # Add axis labels
-  #mtext(text='Population number', side=1, line=3.5)
   mtext(text=expression('K'[g]), side=2, line=3.5)
+  # Known parameter values
   points(1:10,
          fixedres[1 , grep(pattern="sk", x=names(fixedres))],
          pch=21, col='white', bg='gray40'
     )
+  # Panel label
+  mtext(text='Fixed effects model', side=3, line=1)
+
   
  # Estimation accuracy for k from random effects model
  # Set up the boxplot, will write over this with new whiskers
@@ -174,13 +177,15 @@ nrow(res)
   axis(side=2, las=2, labels=FALSE)
   # Close it up with a box so axis styles match
   box()
-  # Add axis labels
-  #mtext(text='Population number', side=1, line=3.5)
-  #mtext(text=expression('K'[g]), side=2, line=3.5)
+  # Known values
   points(1:10,
          ranres[1 , grep(pattern="sk", x=names(ranres))],
          pch=21, col='white', bg='gray40'
     )
+  # Panel label
+  mtext(text='Random effects model', side=3, line=1)
+
+  
   
 # Estimation accuracy for omega from fixed effects model
 # Compare estimated omega to true values using 
