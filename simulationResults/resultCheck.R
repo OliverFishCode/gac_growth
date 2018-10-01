@@ -1,3 +1,17 @@
+# Front-end needs ----
+# Function definitions
+# Make a function to get lower 95% credible limit
+# with short name
+  low = function(x){
+    quantile(x, probs=c(0.025))
+  }
+
+# Make a function to get upper 95% credible limit
+# with short name
+  up = function(x){
+    quantile(x, probs=c(0.975))
+  }
+
 # Base model -----
 load('result.rda')
 head(res)
@@ -71,24 +85,24 @@ nrow(res)
   par(mar=c(5,5,1,1))
   hist(covres$K, col='gray87', xlab=expression(italic('k')),
        ylab = 'Frequency', yaxt='n', xaxt='n',
-       xlim = c(0, 1), main='')
+       xlim = c(.2, .4), main='')
   abline(v=mean(covres$sk), col='blue', lty=1, lwd=3)
   axis(side=1, pos=0)    
-  axis(side=2, pos=0, las=TRUE)
+  axis(side=2, pos=.2, las=TRUE)
 
 # Estimation accuracy for betaT
   par(mar=c(5,5,1,1))
   hist(covres$betaT, col='gray87', 
        xlab=expression(beta['T']),
        ylab = 'Frequency', yaxt='n', xaxt='n',
-       xlim = c(-.6, .6), main='')
+       xlim = c(.1, .14), main='')
   abline(v=mean(covres$sbetaT), col='blue', lty=1, lwd=3)
   axis(side=1, pos=0)    
-  axis(side=2, pos=-.6, las=TRUE)
+  axis(side=2, pos=.1, las=TRUE)
 
 # Estimation accuracy for w
 # Calculate w as function of linear predictor
-  ew = exp(covres$beta0 + covres$betaT*covres$temp)
+  ew = exp(covres$beta0)
 # Make plot
   par(mar=c(5,5,1,1))
   hist(ew, col='gray87', 
@@ -99,6 +113,51 @@ nrow(res)
   axis(side=1, pos=0)    
   axis(side=2, pos=0, las=TRUE)
 
+# Data visualization for covariate effect on omega
+  # Make new sequence of standardized temperatures
+  newT <- seq(-2, 2, .01)
+  # Make empty matrix to hold predictions
+  pred <- matrix(NA, nrow=nrow(covres), ncol=length(newT))
+  # Make mean prediction for each model at each temp
+  for(i in 1:nrow(pred)){
+    for(t in 1:ncol(pred)){
+      pred[i,t] <- exp(covres$beta0[i] + covres$betaT[i]*newT[t])
+    }
+  }
+  
+  # Make the plot
+  # Set graphical params
+  par(mar=c(5,5,1,1))
+  # Plot the first row of prediction against covariate
+  plot(newT, pred[1, ], type='l', lty=1, lwd=1, 
+       col=rgb(.4,.4,.4,.1), yaxt='n', xaxt='n',
+       xlab='Covariate', ylab=expression(omega),
+       ylim=c(110, 210))
+  # Add remaining predictions
+  for(i in 1:nrow(pred)){
+    lines(newT, pred[i, ], lty=1, lwd=1, 
+       col=rgb(.4,.4,.4,.1) )
+  }
+  # Add means and CIs
+  lines(newT, apply(pred, 2, mean), lty=1, lwd=2, col='black')
+  lines(newT, apply(pred, 2, up), lty=2, lwd=1, col='black')
+  lines(newT, apply(pred, 2, low), lty=2, lwd=1, col='black')
+  # Add axes
+  axis(side=1)    
+  axis(side=2,las=2)    
+  
+# Estimation accuracy for t0
+# Make plot
+  par(mar=c(5,5,1,1))
+  hist(covres$to, col='gray87', 
+       xlab=expression(t[0]),
+       ylab = 'Frequency', yaxt='n', xaxt='n',
+       xlim = c(-2, 0), main='')
+  abline(v=mean(covres$st0), col='blue', lty=1, lwd=3)
+  axis(side=1, pos=0)    
+  axis(side=2, pos=-2, las=TRUE)  
+  
+  
 # Fixed- and random-effects models -----
   load('fixedresult.rda')
   head(fixedres)

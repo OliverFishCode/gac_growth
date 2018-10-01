@@ -17,7 +17,7 @@ echo "working directory = "$SLURM_SUBMIT_DIR
 
 # load needed modules on cluster
 module load R
-module load jags
+module load jags/4.2.0
 module list
 ulimit -s unlimited
 

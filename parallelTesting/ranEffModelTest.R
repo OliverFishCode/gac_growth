@@ -5,9 +5,9 @@
   library(rlecuyer)
 
 # Get number of cores
-args = commandArgs(trailingOnly = TRUE);
-ncpus = args[1];
-#ncpus = 3
+  args = commandArgs(trailingOnly = TRUE);
+  ncpus = args[1];
+  #ncpus = 3
 
 # Initialize snowfall
   sfInit(parallel = TRUE, cpus=ncpus, type="SOCK")

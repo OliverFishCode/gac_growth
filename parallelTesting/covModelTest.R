@@ -7,8 +7,6 @@
 # Get number of cores
 args = commandArgs(trailingOnly = TRUE);
 ncpus = args[1];
-
-#ncpus = 7  # Uncomment to run on local workstation
 #ncpus = 3  # Uncomment to run on local workstation
 
 # Initialize snowfall
@@ -20,10 +18,6 @@ ncpus = args[1];
   wrapper <- function(x){
     
 # . Data definition -----
-# Set seed for RNGesus
-  set.seed(607)
-
-# Data definition -----
 # Number of age classes
   nages = 10
   
@@ -34,35 +28,30 @@ ncpus = args[1];
   age = rep(seq(1, nages, 1), nsamps)
   
 # Known parameters of VBGF for simulated population
-  k = 0.35      # Mean of k
-  sdk = 0.02    # SD of k
-  t0 = -1.0     # Mean of t0
-  sdt0 = 0.02   # SD of t0
-  beta0 = 5     # Mean of intercept for glm on omega
-  sdbeta0 =.2   # SD of intercept
-  betaT = .12   # Mean effect of temperature
-  sdbetaT = .02 # SD of temperature effect
-  temp = runif(length(age), 15, 25) # Simulated temperatures
-  
-# Add some error to each of the parameters by 
-# drawing each from distributions
-  sk = rnorm(nages*nsamps, k, sdk)             
-  st0 = rnorm(nages*nsamps, t0, sdt0)           
-  sbeta0 = rnorm(nages*nsamps, beta0, sdbeta0) 
-  sbetaT = rnorm(nages*nsamps, betaT, sdbetaT)
+# Define parameters
+  sk = 0.3
+  st0 = -1  
+  sbeta0 = 5     # Mean of intercept for glm on omega
+  sbetaT = .12   # Mean effect of temperature
+  temp = runif(nages*nsamps, 15, 25) # Simulated temperatures
   sw = exp(sbeta0 + sbetaT*as.vector(scale(temp)))   
   
 # Simulated length of individuals based on age and VBGF parameters
-  slengq = (sw/sk)*(1-exp(-sk*(age-st0))) # Galluci and Quinn (1979)
+  slengq = rnorm(nages*nsamps,
+                 (sw/sk)*(1-exp(-sk*(age-st0))),
+                 10)
 
 # Put the simulated data together in a dataframe
   fish = data.frame(age,    # Fish age
                     temp,   # Temperature
-                    sw,     # L-infinity
+                    sw,     # Omega derived
+                    sbeta0, # Omega intercept
+                    sbetaT, # Omega slope
                     sk,     # Brody growth coefficient
                     st0,    # t0
                     slengq  # Length from gq params and age- identical
                     )
+  
 # . Model definition ----- 
 # Define the model as a function
 modelString = "
@@ -101,7 +90,7 @@ modelString = "
   
 # . Model calibration -----
 # Parameters monitored
-  params = c('to', 'K', 'beta0', 'betaT', 'tau')
+  params = c('to', 'K', 'beta0', 'betaT')
   
 # Package the data for JAGS
   vb_data = list(
@@ -147,10 +136,9 @@ modelString = "
 
 # Save the estimates and the known parameter values
   ests <- summary(fin)[[1]][,1]
-  out <- c(ests, mean(sw), mean(beta0), mean(betaT), mean(sk), mean(st0),
-           mean(as.vector(scale(fish$temp))))
-  names(out)[(length(out)-5):length(out)] <- c(
-    'sw', 'sbeta0', 'sbetaT','sk','st0','temp')  
+  out <- c(ests, mean(sw), mean(sbeta0), mean(sbetaT), mean(sk), mean(st0))
+  names(out)[(length(out)-4):length(out)] <- c(
+    'sw', 'sbeta0', 'sbetaT','sk','st0')  
   
 # Return the result  
   return(list(
@@ -164,11 +152,11 @@ modelString = "
   sfLibrary(rlecuyer)
   
 # Start network random number generator -----
-  sfClusterSetupRNG()
+#  sfClusterSetupRNG()
   
 # Distribute calculations to workers -----
   # Number of simulations to run
-    niterations <- 1000
+    niterations <- 48
   
   # Get start time for benchmarking
     start <- Sys.time()
