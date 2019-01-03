@@ -80,39 +80,68 @@ nrow(res)
   load('covresult.rda')
   head(covres)
   nrow(covres)
+  
+# . Fig. 2 ----
+  # Set up graphics device
+  tiff(
+    filename = "Figure2.tif",
+    width = 1460,
+    height = 1460,
+    pointsize = 8,
+    res = 350
+  )
 
-# Estimation accuracy for k
-  par(mar=c(5,5,1,1))
-  hist(covres$K, col='gray87', xlab=expression(italic('k')),
+  # Estimation accuracy for k
+  par(mfrow=c(2, 2), oma=c(1,5,1,1))
+  par(mar=c(4,1,1,1))
+  hist(covres$K, col='gray87', xlab='K',
        ylab = 'Frequency', yaxt='n', xaxt='n',
-       xlim = c(.2, .4), main='')
-  abline(v=mean(covres$sk), col='blue', lty=1, lwd=3)
+       xlim = c(.2, .4), main='', border='gray87')
+  abline(v=mean(covres$sk), col='black', lty=2, lwd=1)
   axis(side=1, pos=0)    
   axis(side=2, pos=.2, las=TRUE)
-
-# Estimation accuracy for betaT
-  par(mar=c(5,5,1,1))
-  hist(covres$betaT, col='gray87', 
-       xlab=expression(beta['T']),
-       ylab = 'Frequency', yaxt='n', xaxt='n',
-       xlim = c(.1, .14), main='')
-  abline(v=mean(covres$sbetaT), col='blue', lty=1, lwd=3)
-  axis(side=1, pos=0)    
-  axis(side=2, pos=.1, las=TRUE)
-
+  mtext(side=2, 'Frequency', adj=-.75, line=3.5)
+  
 # Estimation accuracy for w
 # Calculate w as function of linear predictor
   ew = exp(covres$beta0)
 # Make plot
-  par(mar=c(5,5,1,1))
+  par(mar=c(4,1,1,1))
   hist(ew, col='gray87', 
        xlab=expression(omega),
-       ylab = 'Frequency', yaxt='n', xaxt='n',
-       xlim = c(0, 300), main='')
-  abline(v=mean(covres$sw), col='blue', lty=1, lwd=3)
+       ylab = '', yaxt='n', xaxt='n',
+       xlim = c(120, 180), main='', cex.lab=1.2,
+       border='gray87')
+  abline(v=mean(covres$sw), col='black', lty=2, lwd=1)
   axis(side=1, pos=0)    
-  axis(side=2, pos=0, las=TRUE)
-
+  axis(side=2, pos=120, las=TRUE, labels = F)
+ 
+# Estimation accuracy for t0
+# Make plot
+  par(mar=c(4,1,1,1))
+  hist(covres$to, col='gray87', 
+       xlab=expression(t[0]),
+       ylab = 'Frequency', yaxt='n', xaxt='n',
+       xlim = c(-1.4, -.6), main='',
+       ylim=c(0,200), breaks=13,
+       border='gray87')
+  abline(v=mean(covres$st0), col='black', lty=2, lwd=1)
+  axis(side=1, pos=0)    
+  axis(side=2, pos=-1.4, las=TRUE)    
+   
+# Estimation accuracy for betaT
+  par(mar=c(4,1,1,1))
+  hist(covres$betaT, col='gray87', 
+       xlab=expression(beta['T']),
+       ylab = '', yaxt='n', xaxt='n',
+       xlim = c(.1, .14), main='',
+       border='gray87')
+  abline(v=mean(covres$sbetaT), col='black', lty=2, lwd=1)
+  axis(side=1, pos=0)    
+  axis(side=2, pos=.1, labels = F)
+dev.off()  
+  
+# . Fig. 2.5 ----
 # Data visualization for covariate effect on omega
   # Make new sequence of standardized temperatures
   newT <- seq(-2, 2, .01)
@@ -123,8 +152,7 @@ nrow(res)
     for(t in 1:ncol(pred)){
       pred[i,t] <- exp(covres$beta0[i] + covres$betaT[i]*newT[t])
     }
-  }
-  
+  }    
   # Make the plot
   # Set graphical params
   par(mar=c(5,5,1,1))
@@ -145,18 +173,6 @@ nrow(res)
   # Add axes
   axis(side=1)    
   axis(side=2,las=2)    
-  
-# Estimation accuracy for t0
-# Make plot
-  par(mar=c(5,5,1,1))
-  hist(covres$to, col='gray87', 
-       xlab=expression(t[0]),
-       ylab = 'Frequency', yaxt='n', xaxt='n',
-       xlim = c(-2, 0), main='')
-  abline(v=mean(covres$st0), col='blue', lty=1, lwd=3)
-  axis(side=1, pos=0)    
-  axis(side=2, pos=-2, las=TRUE)  
-  
   
 # Fixed- and random-effects models -----
   load('fixedresult.rda')
